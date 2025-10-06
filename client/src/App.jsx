@@ -20,6 +20,10 @@ import Unauthorized from "./pages/unauthorized";
 import UserDashboard from "./pages/Dashboard/Userdashboard/UserDashboard";
 import UserMyBookings from "./pages/Dashboard/Userdashboard/MyBookings";
 import UserProfile from "./pages/Dashboard/Userdashboard/Profile";
+import PaymentHistory from "./pages/Dashboard/Userdashboard/PaymentHistory";
+import Notifications from "./pages/Dashboard/Userdashboard/Notifications";
+import Settings from "./pages/Dashboard/Userdashboard/Settings";
+import HelpSupport from "./pages/Dashboard/Userdashboard/HelpSupport";
 import AdminDashboard from "./pages/Dashboard/AdminDashboard/AdminDashboard";
 import MyBookings from "./pages/Dashboard/AdminDashboard/MyBookings";
 import Profile from "./pages/Dashboard/AdminDashboard/Profile";
@@ -59,6 +63,7 @@ const App = () => {
 
             {/* Protected routes */}
 
+
             <Route
               path="/dashboard/user"
               element={
@@ -80,6 +85,38 @@ const App = () => {
               element={
                 <ProtectedRoute role="user">
                   <UserProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/user/payments"
+              element={
+                <ProtectedRoute role="user">
+                  <PaymentHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/user/notifications"
+              element={
+                <ProtectedRoute role="user">
+                  <Notifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/user/settings"
+              element={
+                <ProtectedRoute role="user">
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/user/help"
+              element={
+                <ProtectedRoute role="user">
+                  <HelpSupport />
                 </ProtectedRoute>
               }
             />

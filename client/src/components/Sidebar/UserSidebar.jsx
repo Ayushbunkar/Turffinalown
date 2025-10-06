@@ -1,57 +1,169 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
-import { motion } from "framer-motion";
 
-const links = [
-	{ to: "/dashboard/user", label: "Dashboard", icon: (
-		<svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6m-6 0v6m0 0H7m6 0h6" /></svg>
-	) },
-	{ to: "/dashboard/user/my-bookings", label: "My Bookings", icon: (
-		<svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-	) },
-	{ to: "/dashboard/user/profile", label: "Profile", icon: (
-		<svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.485 0 4.797.657 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-	) },
-];
+import React from 'react';
+import { motion } from 'framer-motion';
+import {
+  User,
+  Calendar,
+  LogOut,
+  Home,
+  CreditCard,
+  Bell,
+  Settings,
+  HelpCircle,
+  Moon,
+  Sun
+} from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
-const sidebarVariants = {
-	hidden: { x: -80, opacity: 0 },
-	visible: { x: 0, opacity: 1, transition: { type: "spring", stiffness: 80 } },
+const Sidebar = ({ onToggleDark, darkMode = false, isMobileOpen = false, onMobileToggle = () => {} }) => {
+  const location = useLocation();
+  // Fetch user from localStorage (as in dashboard pages)
+  const user = JSON.parse(localStorage.getItem('user')) || { name: 'User', email: 'user@example.com' };
+
+  const menuItems = [
+    {
+      icon: Home,
+      label: 'Dashboard',
+      path: '/dashboard/user',
+      active: location.pathname === '/dashboard/user'
+    },
+    {
+      icon: Calendar,
+      label: 'My Bookings',
+      path: '/dashboard/user/my-bookings',
+      active: location.pathname === '/dashboard/user/my-bookings'
+    },
+    {
+      icon: User,
+      label: 'Profile',
+      path: '/dashboard/user/profile',
+      active: location.pathname === '/dashboard/user/profile'
+    },
+    {
+      icon: CreditCard,
+      label: 'Payment History',
+      path: '/dashboard/user/payments',
+      active: location.pathname === '/dashboard/user/payments'
+    },
+    {
+      icon: Bell,
+      label: 'Notifications',
+      path: '/dashboard/user/notifications',
+      active: location.pathname === '/dashboard/user/notifications'
+    },
+    {
+      icon: Settings,
+      label: 'Settings',
+      path: '/dashboard/user/settings',
+      active: location.pathname === '/dashboard/user/settings'
+    },
+    {
+      icon: HelpCircle,
+      label: 'Help & Support',
+      path: '/dashboard/user/help',
+      active: location.pathname === '/dashboard/user/help'
+    }
+  ];
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
+
+  return (
+    <motion.aside 
+      initial={{ x: -280 }}
+      animate={{ x: 0 }}
+      transition={{ duration: 0.3 }}
+      className={`fixed left-0  z-40 w-64 bg-white dark:bg-gray-800 shadow-xl border-r border-gray-200 dark:border-gray-700 
+                 transform transition-transform duration-300 ease-in-out h-[calc(100vh-9rem)] flex flex-col
+                 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                 lg:block`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center text-lg font-semibold">
+            {user?.name ? user.name[0].toUpperCase() : 'U'}
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
+              {user?.name || 'User'}
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {user?.email || 'user@example.com'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation Menu - Scrollable */}
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto min-h-0 user-sidebar-nav">
+        <style>{`
+          .user-sidebar-nav::-webkit-scrollbar {
+            width: 6px;
+          }
+          .user-sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .user-sidebar-nav::-webkit-scrollbar-thumb {
+            background-color: #d1d5db;
+            border-radius: 3px;
+          }
+          .user-sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background-color: #9ca3af;
+          }
+          .dark .user-sidebar-nav::-webkit-scrollbar-thumb {
+            background-color: #4b5563;
+          }
+          .dark .user-sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background-color: #6b7280;
+          }
+        `}</style>
+        {menuItems.map((item, index) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={index}
+              to={item.path}
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
+                item.active
+                  ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-r-2 border-green-500'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="font-medium">{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Bottom Actions */}
+      <div className="mt-auto p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex-shrink-0">
+        {/* Dark Mode Toggle */}
+        <button
+          onClick={onToggleDark}
+          className="flex items-center space-x-3 w-full px-4 py-3 mb-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+        >
+          {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          <span className="font-medium">
+            {darkMode ? 'Light Mode' : 'Dark Mode'}
+          </span>
+        </button>
+
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center space-x-3 w-full px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="font-medium">Logout</span>
+        </button>
+      </div>
+    </motion.aside>
+  );
 };
 
-const UserSidebar = () => {
-	return (
-		<motion.aside
-			initial="hidden"
-			animate="visible"
-			variants={sidebarVariants}
-			className="fixed top-16 left-0 h-full w-56 bg-gradient-to-br from-blue-600 to-blue-400 shadow-xl z-30 flex flex-col py-8 px-4"
-		>
-			<div className="mb-10 text-white text-2xl font-bold tracking-wide text-center">
-				<span className="inline-block align-middle mr-2">
-					<svg className="w-8 h-8 inline-block" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-				</span>
-				User Panel
-			</div>
-			<nav className="flex flex-col gap-2">
-				{links.map((link) => (
-					<NavLink
-						key={link.to}
-						to={link.to}
-						className={({ isActive }) =>
-							`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-blue-700/80 hover:text-white ${
-								isActive ? "bg-blue-800 text-white shadow-lg" : "text-blue-100"
-							}`
-						}
-						end
-					>
-						{link.icon}
-						<span>{link.label}</span>
-					</NavLink>
-				))}
-			</nav>
-		</motion.aside>
-	);
-};
-
-export default UserSidebar;
+export default Sidebar;
