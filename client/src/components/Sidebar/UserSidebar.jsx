@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -15,54 +14,27 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
-const Sidebar = ({ onToggleDark, darkMode = false, isMobileOpen = false, onMobileToggle = () => {} }) => {
+const Sidebar = ({
+  onToggleDark,
+  darkMode = false,
+  isMobileOpen = false,
+  onMobileToggle = () => {}
+}) => {
   const location = useLocation();
-  // Fetch user from localStorage (as in dashboard pages)
-  const user = JSON.parse(localStorage.getItem('user')) || { name: 'User', email: 'user@example.com' };
+
+  const user = JSON.parse(localStorage.getItem('user')) || {
+    name: 'User',
+    email: 'user@example.com'
+  };
 
   const menuItems = [
-    {
-      icon: Home,
-      label: 'Dashboard',
-      path: '/dashboard/user',
-      active: location.pathname === '/dashboard/user'
-    },
-    {
-      icon: Calendar,
-      label: 'My Bookings',
-      path: '/dashboard/user/my-bookings',
-      active: location.pathname === '/dashboard/user/my-bookings'
-    },
-    {
-      icon: User,
-      label: 'Profile',
-      path: '/dashboard/user/profile',
-      active: location.pathname === '/dashboard/user/profile'
-    },
-    {
-      icon: CreditCard,
-      label: 'Payment History',
-      path: '/dashboard/user/payments',
-      active: location.pathname === '/dashboard/user/payments'
-    },
-    {
-      icon: Bell,
-      label: 'Notifications',
-      path: '/dashboard/user/notifications',
-      active: location.pathname === '/dashboard/user/notifications'
-    },
-    {
-      icon: Settings,
-      label: 'Settings',
-      path: '/dashboard/user/settings',
-      active: location.pathname === '/dashboard/user/settings'
-    },
-    {
-      icon: HelpCircle,
-      label: 'Help & Support',
-      path: '/dashboard/user/help',
-      active: location.pathname === '/dashboard/user/help'
-    }
+    { icon: Home, label: 'Dashboard', path: '/dashboard/user' },
+    { icon: Calendar, label: 'My Bookings', path: '/dashboard/user/my-bookings' },
+    { icon: User, label: 'Profile', path: '/dashboard/user/profile' },
+    { icon: CreditCard, label: 'Payment History', path: '/dashboard/user/payments' },
+    { icon: Bell, label: 'Notifications', path: '/dashboard/user/notifications' },
+    { icon: Settings, label: 'Settings', path: '/dashboard/user/settings' },
+    { icon: HelpCircle, label: 'Help & Support', path: '/dashboard/user/help' }
   ];
 
   const handleLogout = () => {
@@ -72,17 +44,16 @@ const Sidebar = ({ onToggleDark, darkMode = false, isMobileOpen = false, onMobil
   };
 
   return (
-    <motion.aside 
+    <motion.aside
       initial={{ x: -280 }}
       animate={{ x: 0 }}
       transition={{ duration: 0.3 }}
-      className={`fixed left-0  z-40 w-64 bg-white dark:bg-gray-800 shadow-xl border-r border-gray-200 dark:border-gray-700 
-                 transform transition-transform duration-300 ease-in-out h-[calc(100vh-9rem)] flex flex-col
-                 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-                 lg:block`}
+      className={`fixed left-0 z-40 w-64 bg-white  dark:bg-gray-800 shadow-xl border-r border-gray-200 dark:border-gray-700 
+                 transform transition-transform duration-300 ease-in-out h-screen flex flex-col
+                 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} lg:block`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-7  border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center text-lg font-semibold">
             {user?.name ? user.name[0].toUpperCase() : 'U'}
@@ -98,7 +69,7 @@ const Sidebar = ({ onToggleDark, darkMode = false, isMobileOpen = false, onMobil
         </div>
       </div>
 
-      {/* Navigation Menu - Scrollable */}
+      {/* Navigation Menu — Scrollable */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto min-h-0 user-sidebar-nav">
         <style>{`
           .user-sidebar-nav::-webkit-scrollbar {
@@ -121,14 +92,17 @@ const Sidebar = ({ onToggleDark, darkMode = false, isMobileOpen = false, onMobil
             background-color: #6b7280;
           }
         `}</style>
+
         {menuItems.map((item, index) => {
           const Icon = item.icon;
+          const active = location.pathname === item.path;
+
           return (
             <Link
               key={index}
               to={item.path}
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
-                item.active
+                active
                   ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-r-2 border-green-500'
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
@@ -148,9 +122,7 @@ const Sidebar = ({ onToggleDark, darkMode = false, isMobileOpen = false, onMobil
           className="flex items-center space-x-3 w-full px-4 py-3 mb-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
         >
           {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          <span className="font-medium">
-            {darkMode ? 'Light Mode' : 'Dark Mode'}
-          </span>
+          <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
         </button>
 
         {/* Logout */}

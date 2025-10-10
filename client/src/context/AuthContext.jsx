@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 
 export const AuthContext = createContext();
 
@@ -25,9 +25,17 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (userData) => {
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, role, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, role, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+// Custom hook to use AuthContext
+export const useAuth = () => useContext(AuthContext);

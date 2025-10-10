@@ -25,10 +25,15 @@ connectDB();
 
 
 // Middleware
-app.use(cors({
-  origin: ["http://localhost:5174"],
-  credentials: true,
-}));
+// Allow local dev servers (Vite) on both default ports and enable preflight-friendly settings
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

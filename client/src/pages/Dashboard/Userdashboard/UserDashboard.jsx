@@ -1,115 +1,157 @@
 import React, { useEffect, useState } from "react";
-import api from "../../../config/Api";
+import Sidebar from "../../../components/Sidebar/UserSidebar";
 
-import { Link } from "react-router-dom";
-import TurfBookingChart from "../../../components/TurfBookingChart";
-import UserSidebar from "../../../components/Sidebar/UserSidebar";
-import { motion } from "framer-motion";
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: (i) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.15, type: "spring", stiffness: 80 },
-  }),
-};
-
-const UserDashboard = () => {
-  const [data, setData] = useState([]);
-  const [stats, setStats] = useState({ bookings: 0, upcoming: 0, completed: 0 });
-
-  useEffect(() => {
-    api.get("/bookings/my-bookings").then((res) => {
-      setData(res.data);
-      setStats({
-        bookings: res.data.length,
-        upcoming: res.data.filter((b) => b.status === "upcoming").length,
-        completed: res.data.filter((b) => b.status === "completed").length,
-      });
-    });
-  }, []);
-
-  const cards = [
-    {
-      label: "Total Bookings",
-      value: stats.bookings,
-      icon: (
-        <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-      ),
-      color: "from-blue-400 to-blue-600",
-    },
-    {
-      label: "Upcoming",
-      value: stats.upcoming,
-      icon: (
-        <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-      ),
-      color: "from-green-400 to-green-600",
-    },
-    {
-      label: "Completed",
-      value: stats.completed,
-      icon: (
-        <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-      ),
-      color: "from-purple-400 to-purple-600",
-    },
-  ];
-
+// Local Card component
+function Card({ className = "", children }) {
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 animate-fade-in">
-      <UserSidebar />
-      <main className="flex-1 p-6 md:ml-56">
-        <motion.h1
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="text-3xl font-extrabold mb-8 text-gray-800 text-center tracking-tight"
-        >
-          Welcome to Your Dashboard
-        </motion.h1>
-
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {cards.map((card, i) => (
-            <motion.div
-              key={card.label}
-              custom={i}
-              initial="hidden"
-              animate="visible"
-              variants={cardVariants}
-              className={`rounded-xl shadow-lg p-6 bg-gradient-to-br ${card.color} text-white flex flex-col items-center hover:scale-105 transition-transform duration-300`}
-            >
-              {card.icon}
-              <div className="mt-4 text-lg font-semibold">{card.label}</div>
-              <div className="text-3xl font-bold mt-2 animate-pulse">{card.value}</div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-wrap gap-4 mb-10 justify-center">
-          <Link to="/dashboard/user/my-bookings">
-            <button className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition">My Bookings</button>
-          </Link>
-          <Link to="/dashboard/user/profile">
-            <button className="px-6 py-3 rounded-lg bg-gray-700 text-white font-semibold shadow hover:bg-gray-800 transition">Profile</button>
-          </Link>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.7 }}
-          className="bg-white rounded-xl shadow-xl p-6"
-        >
-          <h2 className="text-xl font-bold mb-4 text-gray-700">Booking Trends</h2>
-          <TurfBookingChart data={data} />
-        </motion.div>
-      </main>
+    <div className={`rounded-xl shadow-lg bg-white dark:bg-gray-800 ${className}`}>
+      {children}
     </div>
   );
-};
+}
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext.jsx";
+import toast from "react-hot-toast";
+import api from "../../../config/Api.jsx";
 
-export default UserDashboard;
+function EditProfileModal({ open, onClose, user, token, onProfileUpdate }) {
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    setName(user?.name || "");
+    setEmail(user?.email || "");
+    setError("");
+  }, [user, open]);
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.patch(
+        "/users/me",
+        { name, email },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      onProfileUpdate(data.user);
+      onClose();
+      toast.success("Profile updated!");
+    } catch (err) {
+      setError(err.response?.data?.message || "Update failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 pt-20 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+        <h2 className="text-lg font-semibold mb-4">Edit Profile</h2>
+        {["Name", "Email"].map((field, idx) => (
+          <div className="mb-3" key={idx}>
+            <label className="block text-sm mb-1">{field}</label>
+            <input
+              className="w-full border px-3 py-2 rounded"
+              value={field === "Name" ? name : email}
+              onChange={(e) => (field === "Name" ? setName(e.target.value) : setEmail(e.target.value))}
+              disabled={loading}
+            />
+          </div>
+        ))}
+        {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+        <div className="flex justify-end space-x-2 mt-4">
+          <button className="px-4 py-2 bg-gray-200 rounded" onClick={onClose} disabled={loading}>
+            Cancel
+          </button>
+          <button className="px-4 py-2 bg-green-600 text-white rounded" onClick={handleSave} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function UserDashboard() {
+  const { user, login } = useAuth();
+  const [darkMode, setDarkMode] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [stats, setStats] = useState({ bookings: 0, upcoming: 0, completed: 0, spent: 0 });
+
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    if (!token) return;
+    api.get("/bookings/my-bookings", { headers: { Authorization: `Bearer ${token}` } })
+      .then(({ data }) => {
+        setStats({
+          bookings: data.length,
+          upcoming: data.filter((b) => b.status === "upcoming").length,
+          completed: data.filter((b) => b.status === "completed").length,
+          spent: data.reduce((sum, b) => sum + (b.price || 0), 0),
+        });
+      })
+      .catch(() => toast.error("Failed to load dashboard data"));
+  }, [token]);
+
+  const handleProfileUpdate = (updatedUser) => {
+    login(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+
+  if (!user) return <div className="flex items-center justify-center h-screen">Please log in to view your dashboard</div>;
+
+  return (
+    <>
+      <EditProfileModal open={editOpen} onClose={() => setEditOpen(false)} user={user} token={token} onProfileUpdate={handleProfileUpdate} />
+      <div className={`${darkMode ? "dark" : ""} min-h-screen  bg-gradient-to-br from-green-50 via-green-100 to-green-200 dark:from-gray-900 dark:to-gray-800`}>
+  {isMobileSidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden" onClick={() => setIsMobileSidebarOpen(false)} />}
+        <div className="flex">
+          <Sidebar user={user} onToggleDark={() => setDarkMode(!darkMode)} darkMode={darkMode} isMobileOpen={isMobileSidebarOpen} onMobileToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)} />
+          <main className="flex-1 ml-0 lg:ml-64 p-4 lg:p-8 pt-48 space-y-8 pb-8 min-h-screen">
+            
+            {/* Profile Card */}
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-md mx-auto mb-8">
+              <Card className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg text-center">
+                <div className="w-16 h-16 rounded-full bg-green-500 text-white mx-auto flex items-center justify-center text-2xl mb-4 font-semibold">{user.name?.[0]?.toUpperCase() || "U"}</div>
+                <h3 className="text-xl font-semibold">{user.name}</h3>
+                <p className="text-gray-500">{user.email}</p>
+                <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded" onClick={() => setEditOpen(true)}>Edit Profile</button>
+              </Card>
+            </motion.div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {[
+                { label: "Total Bookings", value: stats.bookings, color: "text-green-600" },
+                { label: "Upcoming Games", value: stats.upcoming, color: "text-blue-600" },
+                { label: "Total Spent", value: `₹${stats.spent}`, color: "text-purple-600" },
+              ].map((card, idx) => (
+                <Card key={idx} className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg text-center">
+                  <div className={`text-3xl font-bold ${card.color} mb-2`}>{card.value}</div>
+                  <div className="text-gray-600 dark:text-gray-300 font-medium">{card.label}</div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Quick Actions */}
+            <Card className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-4xl mx-auto">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Link to="/turfs" className="flex items-center justify-center px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg">Book New Turf</Link>
+                <Link to="/dashboard/user/my-bookings" className="flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">View My Bookings</Link>
+                <Link to="/dashboard/user/profile" className="flex items-center justify-center px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">Manage Profile</Link>
+              </div>
+            </Card>
+          </main>
+        </div>
+      </div>
+    </>
+  );
+}
+

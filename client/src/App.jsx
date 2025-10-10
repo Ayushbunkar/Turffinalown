@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -19,14 +20,20 @@ import SuperAdminAnalytics from "./pages/Dashboard/superadmin/SuperAdminAnalytic
 import Unauthorized from "./pages/unauthorized";
 import UserDashboard from "./pages/Dashboard/Userdashboard/UserDashboard";
 import UserMyBookings from "./pages/Dashboard/Userdashboard/MyBookings";
-import UserProfile from "./pages/Dashboard/Userdashboard/Profile";
-import PaymentHistory from "./pages/Dashboard/Userdashboard/PaymentHistory";
-import Notifications from "./pages/Dashboard/Userdashboard/Notifications";
+import UserProfile from "./pages/Dashboard/Userdashboard/UserProfile";
+import PaymentHistory from "./pages/Dashboard/Userdashboard/UserPayments";
+import Notifications from "./pages/Dashboard/Userdashboard/UserNotifications";
 import Settings from "./pages/Dashboard/Userdashboard/Settings";
 import HelpSupport from "./pages/Dashboard/Userdashboard/HelpSupport";
-import AdminDashboard from "./pages/Dashboard/AdminDashboard/AdminDashboard";
-import MyBookings from "./pages/Dashboard/AdminDashboard/MyBookings";
-import Profile from "./pages/Dashboard/AdminDashboard/Profile";
+import AdminDashboard from "./pages/Dashboard/TurfAdminDashboard/TurfAdminDashboard";
+import MyBookings from "./pages/Dashboard/TurfAdminDashboard/TurfAdminBookings";
+import Profile from "./pages/Dashboard/TurfAdminDashboard/TurfAdminProfile";
+import TurfAdminTurfs from "./pages/Dashboard/TurfAdminDashboard/TurfAdminTurfs";
+import TurfAdminAnalytics from "./pages/Dashboard/TurfAdminDashboard/TurfAdminAnalytics";
+import TurfAdminOverview from "./pages/Dashboard/TurfAdminDashboard/TurfAdminOverview";
+import TurfAdminNotifications from "./pages/Dashboard/TurfAdminDashboard/TurfAdminNotifications";
+import TurfAdminSettings from "./pages/Dashboard/TurfAdminDashboard/TurfAdminSettings";
+import TurfAdminHelp from "./pages/Dashboard/TurfAdminDashboard/TurfAdminHelp";
 import SuperAdminDashboard from "./pages/Dashboard/superadmin/SuperAdminAnalytics";
 // import SuperAdminDashboard from "./pages/dashboard/SuperAdminDashboard";
 import { AuthProvider } from "./context/AuthContext";
@@ -129,23 +136,16 @@ const App = () => {
                   <AdminDashboard />
                 </ProtectedRoute>
               }
-            />
-            <Route
-              path="/dashboard/admin/my-bookings"
-              element={
-                <ProtectedRoute role="admin">
-                  <MyBookings />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/admin/profile"
-              element={
-                <ProtectedRoute role="admin">
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
+            >
+              <Route index element={<TurfAdminOverview />} />
+              <Route path="turfs" element={<TurfAdminTurfs />} />
+              <Route path="analytics" element={<TurfAdminAnalytics />} />
+              <Route path="notifications" element={<TurfAdminNotifications />} />
+              <Route path="settings" element={<TurfAdminSettings />} />
+              <Route path="help" element={<TurfAdminHelp />} />
+              <Route path="my-bookings" element={<MyBookings />} />
+              <Route path="profile" element={<Profile />} />
+            </Route>
 
             <Route
               path="/dashboard/superadmin"
@@ -160,11 +160,19 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
   </div>
-  {/* Only show Footer on non-dashboard pages */}
-  {!(window.location.pathname.startsWith("/dashboard/user")) && <Footer />}
+  {/* Only show Footer on non-dashboard pages - useLocation provides SPA-aware routing */}
+  <FooterVisibility />
       </Router>
     </AuthProvider>
   );
 };
+
+// Component placed outside Routes to access location
+function FooterVisibility() {
+  const location = useLocation();
+  // Hide footer for any dashboard path (covers /dashboard/user, /dashboard/admin, /dashboard/superadmin)
+  const isDashboard = location.pathname.startsWith("/dashboard");
+  return !isDashboard ? <Footer /> : null;
+}
 
 export default App;
